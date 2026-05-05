@@ -1,0 +1,173 @@
+# ============================================================
+# example.yml
+#
+# Komplett exempeltest för YAML-baserad Playwright-runner.
+# Visar alla actions + foreach.
+#
+# Varje steg innehåller:
+#   - info: mänskligt läsbar beskrivning
+# ============================================================
+
+name: "Example – full feature demo"
+
+# ------------------------------------------------------------
+# Globala variabler
+# ------------------------------------------------------------
+vars:
+  base_url: "https://example.test"
+  username: "demo-user"
+
+# ------------------------------------------------------------
+# Teststeg
+# ------------------------------------------------------------
+steps:
+
+  # ==========================================================
+  # NAVIGATION
+  # ==========================================================
+  - info: "Navigera till startsidan"
+    goto:
+      url: "{{base_url}}/start"
+
+  - info: "Vänta tills URL innehåller /start"
+    wait_for_url:
+      expected_url: "/start"
+      match: contains
+
+  - info: "Verifiera att aktuell URL börjar med base_url/start"
+    assert_url:
+      expected_url: "{{base_url}}/start"
+      match: startswith
+
+  # ==========================================================
+  # WAIT + TEXTASSERTION
+  # ==========================================================
+  - info: "Vänta på att sidrubrik renderas"
+    wait_for_element:
+      selector: "h1.page-title"
+      timeout: 10000
+
+  - info: "Sök efter välkomsttext i sidans HTML"
+    search_text:
+      text: "Welcome"
+
+  - info: "Verifiera att korrekt välkomsttext visas"
+    assert_text:
+      text: "Welcome to the demo application"
+
+  # ==========================================================
+  # INPUT + RADIO + CLICK
+  # ==========================================================
+  - info: "Fyll i användarnamn"
+    fill_input:
+      selector: "input#username"
+      value: "{{username}}"
+
+  - info: "Välj standard-alternativ via radioknapp"
+    select_radio:
+      selector: "input[type='radio'][value='standard']"
+
+  - info: "Gå vidare till nästa steg"
+    click:
+      selector: "button#continue"
+
+  # ==========================================================
+  # DIALOG
+  # ==========================================================
+  - info: "Acceptera bekräftelsedialog"
+    accept_dialog:
+      log_output: true
+
+  # ==========================================================
+  # CLIPBOARD – BASFLÖDE
+  # ==========================================================
+  - info: "Töm clipboard innan test"
+    clear_clipboard: {}
+
+  - info: "Klicka på knapp som kopierar möteslänk"
+    click:
+      selector: "button#copy-invite"
+
+  - info: "Läs clipboard-innehåll"
+    read_clipboard:
+      timeout: 5
+      poll_interval: 0.2
+      log_output: true
+
+  - info: "Verifiera att clipboard innehåller grundläggande mötesinformation"
+    assert_clipboard_contains:
+      contains:
+        - "Join meeting"
+        - "https://"
+      ignore_whitespace: true
+
+  # ==========================================================
+  # FOREACH – TESTA FLERA MÖTESTYPER
+  # ==========================================================
+  - info: "Iterera över flera mötestyper och verifiera genererad länk"
+    foreach:
+      items:
+        - meeting: StandardMeeting
+          expect:
+            - "Something"
+            - "userInfo.displayName"
+
+        - meeting: SecureMeeting
+          expect:
+            - "Secure"
+            - "config.startWithAudioMuted"
+
+        - meeting: ScreenShareOnly
+          expect:
+            - "skärmdelning"
+            - "Join meeting"
+
+      steps:
+
+        - info: "Välj aktuell mötestyp via radioknapp"
+          select_radio:
+            selector: "label.meeting-label:has(input[value='{{meeting}}'])"
+
+        - info: "Generera möteslänk"
+          click:
+            selector: "button#generate-link"
+
+        - info: "Kort väntan för att clipboard ska uppdateras"
+          wait:
+            ms: 500
+
+        - info: "Läs clipboard efter generering"
+          read_clipboard: {}
+
+        - info: "Verifiera att clipboard innehåller förväntade strängar"
+          assert_clipboard_contains:
+            contains: "{{expect}}"
+
+  # ==========================================================
+  # JITSI / TOGGLES
+  # ==========================================================
+  - info: "Säkerställ att ljud är avstängt"
+    ensure_toggle_state:
+      selector: "button#toggle-audio"
+      state: off
+
+  - info: "Säkerställ att video är påslaget"
+    ensure_toggle_state:
+      selector: "button#toggle-video"
+      state: on
+
+  # ==========================================================
+  # URL-KONTROLL UTAN ASSERT
+  # ==========================================================
+  - info: "Kontrollera att vi befinner oss på mötessida"
+    check_url:
+      expected_url: "/meeting"
+      match: contains
+
+  # ==========================================================
+  # AVSLUT
+  # ==========================================================
+  - info: "Vänta kort innan testet avslutas"
+    wait:
+      ms: 1000
+

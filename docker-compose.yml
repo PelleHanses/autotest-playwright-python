@@ -1,0 +1,45 @@
+x-podman:
+    in_pod: false
+
+services:
+  auto_tests:
+    image: pellehanses/playwright:3.14
+    working_dir: /work
+    shm_size: "1gb"
+    volumes:
+      - ./app:/app:z
+      - ./logs:/app/logs:z
+      - ./tests:/app/tests:z
+      - ./promfiles:/work/metrics:z
+    networks:
+      - net_auto
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOG_LEVEL=INFO
+      - LOG_COLORS=false
+    command:
+      #- "--file"
+      #- "/work/tests/prod/meet_login_guest_preprod2.yml"
+      - "--headless"
+      - "true"
+      - "--browser"
+      - "chromium"
+
+  help:
+    image: pellehanses/playwright:3.14
+    working_dir: /work
+    volumes:
+      - ./app:/app:z
+      - ./logs:/app/logs:z
+      - ./tests:/app/tests:z
+      - /opt/larm/promfiles:/work/metrics:z
+    shm_size: "1gb"
+    environment:
+      - PYTHONUNBUFFERED=1
+    command:
+      - "--help"
+
+networks:
+  net_auto:
+    name: net_auto
+    driver: bridge

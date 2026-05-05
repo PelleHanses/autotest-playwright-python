@@ -1,0 +1,73 @@
+---
+# Används av parallel_runner.py med --users N
+# {{user_index}} ersätts automatiskt per instans (1, 2, 3, ...)
+#
+# URL-fragment stänger av ljud, video och förhandsvisning:
+#   startWithAudioMuted=true
+#   startWithVideoMuted=true
+#   startSilent=true            ← stänger av ljudmotorn helt
+#   disableAP=true              ← stänger av ljudbearbetning (CPU-besparing)
+#   prejoinPageEnabled=true     ← explicit pre-join så vi stannar i lobbyn
+#
+- name: lobby_load_guest
+  steps:
+
+    - goto:
+        url: "https://xxx.yyy.zzz/loadtest_lobby#config.startWithAudioMuted=true&config.startWithVideoMuted=true&config.startSilent=true&config.disableAP=true"
+        wait_until: domcontentloaded
+        timeout: 60000
+      info: "Navigera till Jitsi med ljud+video avslaget"
+
+    - wait_for_url:
+        expected_url: "https://pre.xxx.yyy/video/login/login.php"
+        match: contains
+      info: "Väntar på redirect till login-sidan"
+
+    - wait_for_element:
+        selector: "div.login-options form#loginForm"
+      info: "Väntar på att loginformen renderas"
+
+    - click:
+        selector: "label.custom-radio:has(input[value='guest'])"
+      info: "Väljer Gäst-alternativet"
+
+    - fill_input:
+        selector: "#name"
+        value: "LoadBot {{user_index}}"
+      info: "Fyller i gästnamn (unikt per instans)"
+
+    - click:
+        selector: "#submitBtn"
+      info: "Submittar login"
+
+    - wait_for_element:
+        selector: "#react"
+      info: "Väntar på att Jitsi React-appen laddas"
+
+    # Pre-join-skärmen = lobbyn ur belastningsperspektiv.
+    # Användaren är ansluten till signaleringen men inte till JVB ännu.
+    # Byt selector om din Jitsi-version använder annan CSS.
+    - wait_for_element:
+        selector: ".prejoin-screen-content, [data-testid='prejoin.joinMeeting'], .premeeting-screen"
+        timeout: 30000
+      info: "Väntar på att pre-join/lobby-skärmen visas"
+
+    # Stannar i lobbyn – justera duration efter behov
+    - wait:
+        ms: 1000
+      info: "Stannar i lobbyn i 5 minuter (belastningstest)"
+
+    # Join meeting
+    - click:
+        selector: "[data-testid='prejoin.joinMeeting']"
+      info: "Klickar Join meeting"
+
+    - wait_for_element:
+        selector: "#largeVideo, .remotevideomenu, [data-testid='toolbar.hangup']"
+        timeout: 20000
+      info: "Väntar på att mötet laddas (bekräftar att vi är inne)"
+
+    - wait:
+        ms: 480000
+      info: "Stannar i mötet i 5 minuter (belastningstest)"
+

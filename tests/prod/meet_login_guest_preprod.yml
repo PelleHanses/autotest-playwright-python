@@ -1,0 +1,72 @@
+---
+- name: meet_login_guest_preprod
+  steps:
+
+    # Initial redirect + textsökning
+    - goto:
+        url: "https://xxx.yyy.zzz/test_auto01#config.startWithAudioMuted=false"
+      info: "Navigera till JItsi"
+
+    - wait_for_url:
+        expected_url: "https://pre.xxx.yyy.zzz/video/login/login.php?/test_auto01?state="
+        match: contains
+      info: "Verifierar att redirect skett till login-sidan"
+
+    - search_text:
+        text: "Hur vill du"
+      info: "Söker efter texten 'Hur vill du' på sidan"
+
+    - wait_for_element:
+        selector: 'div.login-options form#loginForm'
+      info: "Väntar på att login-formen ska renderas"
+
+    # Ansluter som gäst
+    - click:
+        selector: "label.custom-radio:has(input[value='guest'])"
+      info: "Väljer alternativet Gäst via label, radioknapp"
+
+    - fill_input:
+        selector: "#name"
+        value: " Guest"
+      info: "Fyller i namn"
+
+    - click:
+        selector: "#submitBtn"
+      info: "Klickar på submit-knappen"
+
+
+    # Debuggfönster
+    #- wait_for_element:
+    #    selector: "#continue"
+    #  info: "Kontrollerar att elementet knapp skapats"
+    #- click:
+    #    selector: "#continue"
+    #  info: "Klickar på continue-knappen, debuggsida"
+    #- wait_for_element:
+    #    selector: "#continue"
+    #  info: "Kontrollerar att elementet knapp skapats"
+    #- click:
+    #    selector: "#continue"
+    #  info: "Klickar på continue-knappen, debuggsida"
+    #- wait_for_element:
+    #    selector: "#continue"
+    #  info: "Kontrollerar att elementet knapp skapats"
+    #- click:
+    #    selector: "#continue"
+    #  info: "Klickar på continue-knappen, debuggsida"
+
+
+    - wait_for_element:
+        selector: "#react"
+      info: "Kontrollerar att elementet react skapats"
+
+    # Testa knappar
+    - wait_for_element:
+       selector: "div.toolbox-button[role='button'][aria-pressed='true']"
+      info: "Väntar på mikrofonknappen som är på"
+
+    - ensure_toggle_state:
+        selector: ".audio-preview .toolbox-button[role='button']"
+        state: "on"
+      info: "Säkerställer att mikrofonen är på"
+
