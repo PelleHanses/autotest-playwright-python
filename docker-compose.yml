@@ -7,9 +7,9 @@ services:
     working_dir: /work
     shm_size: "1gb"
     volumes:
-      - ./app:/app:z
-      - ./logs:/app/logs:z
-      - ./tests:/app/tests:z
+      - ./app:/work:z
+      - ./logs:/work/logs:z
+      - ./tests:/work/tests:z
       - ./promfiles:/work/metrics:z
     networks:
       - net_auto
