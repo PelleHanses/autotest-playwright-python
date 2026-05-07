@@ -4,6 +4,11 @@ x-podman:
 services:
   auto_tests:
     image: pellehanses/playwright:3.14
+    # Öka antal tillåtna file descriptors
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
     working_dir: /work
     shm_size: "1gb"
     volumes:

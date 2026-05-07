@@ -13,13 +13,13 @@
   steps:
 
     - goto:
-        url: "https://xxx.yyy.zzz/loadtest_lobby#config.startWithAudioMuted=true&config.startWithVideoMuted=true&config.startSilent=true&config.disableAP=true"
+        url: "https://jitsi-preprod.sgit.se/loadtest_lobby#config.startWithAudioMuted=true&config.startWithVideoMuted=true&config.startSilent=true&config.disableAP=true"
         wait_until: domcontentloaded
         timeout: 60000
       info: "Navigera till Jitsi med ljud+video avslaget"
 
     - wait_for_url:
-        expected_url: "https://pre.xxx.yyy/video/login/login.php"
+        expected_url: "https://pre.safos.se/video/login/login.php"
         match: contains
       info: "Väntar på redirect till login-sidan"
 
@@ -68,6 +68,6 @@
       info: "Väntar på att mötet laddas (bekräftar att vi är inne)"
 
     - wait:
-        ms: 480000
-      info: "Stannar i mötet i 5 minuter (belastningstest)"
+        ms: 880000
+      info: "Stannar i mötet i 11 minuter (belastningstest)"
 
